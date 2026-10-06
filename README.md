@@ -1,812 +1,555 @@
--- ROCKET Evade Ultimate Pro (Full Script with Weather Changer, Key System, Speed, Dash, ESP, Coin Farm & Anti-Ban)
--- Исполнитель: Delta Executor
+-- [[ FTAP & EVADE MULTI-HUB - PLAYERS TAB ADDED ]] --
 
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
-local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+local Camera = Workspace.CurrentCamera
+
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Настройки ключа
-local CORRECT_KEY = "ROCKET2026"
-local isAuthorized = false
+-- 1. СИСТЕМА КОНФИГА
+local Config = {
+    Noclip = false,
+    Speed = false,
+    Bypass = false,
+    InfJump = false,
+    TpForward = false,
+    EvadeGod = false,
+    EvadeStamina = false,
+    AutoDodge = false,
+    Fullbright = false,
+    NightVision = false,
+    FpsBoost = false,
+    UltraFps = false,
+    Resolution = false
+}
 
--- Удаление старых интерфейсов
-if CoreGui:FindFirstChild("RocketKeySystem") then CoreGui.RocketKeySystem:Destroy() end
-if CoreGui:FindFirstChild("RocketEvadeUltimate") then CoreGui.RocketEvadeUltimate:Destroy() end
-
--- [ОКНО ВВОДА КЛЮЧА]
-local KeyGui = Instance.new("ScreenGui")
-KeyGui.Name = "RocketKeySystem"
-KeyGui.Parent = CoreGui
-
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Size = UDim2.new(0, 300, 0, 180)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-KeyFrame.BorderSizePixel = 0
-KeyFrame.Active = true
-KeyFrame.Draggable = true
-KeyFrame.Parent = KeyGui
-Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
-
-local KeyTitle = Instance.new("TextLabel")
-KeyTitle.Size = UDim2.new(1, 0, 0, 40)
-KeyTitle.BackgroundTransparency = 1
-KeyTitle.Text = "ROCKET | Авторизация"
-KeyTitle.TextColor3 = Color3.fromRGB(0, 255, 128)
-KeyTitle.TextSize = 16
-KeyTitle.Font = Enum.Font.SourceSansBold
-KeyTitle.Parent = KeyFrame
-
-local KeyBox = Instance.new("TextBox")
-KeyBox.Size = UDim2.new(0, 260, 0, 35)
-KeyBox.Position = UDim2.new(0, 20, 0, 55)
-KeyBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyBox.PlaceholderText = "Введите ключ..."
-KeyBox.TextSize = 14
-KeyBox.Font = Enum.Font.SourceSansBold
-KeyBox.Parent = KeyFrame
-Instance.new("UICorner", KeyBox).CornerRadius = UDim.new(0, 6)
-
-local SubmitBtn = Instance.new("TextButton")
-SubmitBtn.Size = UDim2.new(0, 260, 0, 35)
-SubmitBtn.Position = UDim2.new(0, 20, 0, 100)
-SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SubmitBtn.TextSize = 14
-SubmitBtn.Font = Enum.Font.SourceSansBold
-SubmitBtn.Text = "Подтвердить ключ"
-SubmitBtn.Parent = KeyFrame
-Instance.new("UICorner", SubmitBtn).CornerRadius = UDim.new(0, 6)
-
-local GetKeyBtn = Instance.new("TextButton")
-GetKeyBtn.Size = UDim2.new(0, 260, 0, 25)
-GetKeyBtn.Position = UDim2.new(0, 20, 0, 142)
-GetKeyBtn.BackgroundTransparency = 1
-GetKeyBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-GetKeyBtn.TextSize = 12
-GetKeyBtn.Font = Enum.Font.SourceSansBold
-GetKeyBtn.Text = "Получить ключ (Telegram)"
-GetKeyBtn.Parent = KeyFrame
-
-GetKeyBtn.MouseButton1Click:Connect(function()
-    setclipboard("https://t.me/RocketWay")
-    GetKeyBtn.Text = "Ссылка скопирована!"
-    task.wait(1.5)
-    GetKeyBtn.Text = "Получить ключ (Telegram)"
-end)
-
-SubmitBtn.MouseButton1Click:Connect(function()
-    if KeyBox.Text == CORRECT_KEY then
-        isAuthorized = true
-        KeyGui:Destroy()
-        LoadMainScript()
-    else
-        SubmitBtn.Text = "Неверный ключ!"
-        SubmitBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        task.wait(1.5)
-        SubmitBtn.Text = "Подтвердить ключ"
-        SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-    end
-end)
-
--- [ОСНОВНОЙ СКРИПТ (Запускается после ввода ключа)]
-function LoadMainScript()
-    getgenv().RocketConfig = {
-        SpeedEnabled = false,
-        SpeedValue = 200,
-        DashMultiplier = 2.5,
-        CoinFarm = false,
-        ESPEnabled = false,
-        PublicVisuals = true,
-        AntiBanBypass = true,
-        CurrentWeather = "Normal"
-    }
-
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "RocketEvadeUltimate"
-    ScreenGui.Parent = CoreGui
-
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 340, 0, 570)
-    MainFrame.Position = UDim2.new(0.5, -170, 0.5, -285)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-    MainFrame.Parent = ScreenGui
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, 0, 0, 40)
-    Title.BackgroundTransparency = 1
-    Title.Text = "ROCKET | Evade Ultimate Pro"
-    Title.TextColor3 = Color3.fromRGB(0, 255, 128)
-    Title.TextSize = 16
-    Title.Font = Enum.Font.SourceSansBold
-    Title.Parent = MainFrame
-
-    local function createToggle(name, yPos, callback)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0, 300, 0, 32)
-        btn.Position = UDim2.new(0, 20, 0, yPos)
-        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.TextSize = 13
-        btn.Font = Enum.Font.SourceSansBold
-        btn.Text = name .. ": OFF"
-        btn.Parent = MainFrame
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-        
-        local state = false
-        btn.MouseButton1Click:Connect(function()
-            state = not state
-            btn.BackgroundColor3 = state and Color3.fromRGB(0, 180, 90) or Color3.fromRGB(30, 30, 40)
-            btn.Text = name .. (state and ": ON" or ": OFF")
-            callback(state)
-        end)
-    end
-
-    local function createTextBox(name, yPos, defaultVal, callback)
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0, 160, 0, 32)
-        label.Position = UDim2.new(0, 20, 0, yPos)
-        label.BackgroundTransparency = 1
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.TextSize = 12
-        label.Font = Enum.Font.SourceSansBold
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Text = name
-        label.Parent = MainFrame
-        
-        local box = Instance.new("TextBox")
-        box.Size = UDim2.new(0, 130, 0, 32)
-        box.Position = UDim2.new(0, 190, 0, yPos)
-        box.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        box.TextColor3 = Color3.fromRGB(0, 255, 128)
-        box.TextSize = 13
-        box.Font = Enum.Font.SourceSansBold
-        box.Text = tostring(defaultVal)
-        box.Parent = MainFrame
-        Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
-        
-        box.FocusLost:Connect(function()
-            local num = tonumber(box.Text)
-            if num then callback(num) else box.Text = tostring(defaultVal) callback(defaultVal) end
-        end)
-    end
-
-    -- Элементы интерфейса
-    createToggle("Спидхак (200+)", 45, function(state) getgenv().RocketConfig.SpeedEnabled = state end)
-    createTextBox("Скорость:", 82, 200, function(val) getgenv().RocketConfig.SpeedValue = val end)
-    createTextBox("Множитель Дэша:", 119, 2.5, function(val) getgenv().RocketConfig.DashMultiplier = val end)
-    createToggle("Визуальная синхронизация", 156, function(state) getgenv().RocketConfig.PublicVisuals = state end)
-    createToggle("Автосбор монет", 193, function(state) getgenv().RocketConfig.CoinFarm = state end)
-    createToggle("ВХ (Игроки + Nextbots)", 230, function(state) getgenv().RocketConfig.ESPEnabled = state end)
-
-    -- Меню выбора погоды в Evade
-    local WeatherLabel = Instance.new("TextLabel")
-    WeatherLabel.Size = UDim2.new(0, 300, 0, 20)
-    WeatherLabel.Position = UDim2.new(0, 20, 0, 268)
-    WeatherLabel.BackgroundTransparency = 1
-    WeatherLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
-    WeatherLabel.TextSize = 12
-    WeatherLabel.Font = Enum.Font.SourceSansBold
-    WeatherLabel.Text = "Выбор погоды / Освещения в Evade:"
-    WeatherLabel.Parent = MainFrame
-
-    local weatherTypes = {"Normal", "Foggy", "Dark (Night)", "Sunset", "Blizzard"}
-    local weatherIdx = 1
-
-    local WeatherBtn = Instance.new("TextButton")
-    WeatherBtn.Size = UDim2.new(0, 300, 0, 32)
-    WeatherBtn.Position = UDim2.new(0, 20, 0, 292)
-    WeatherBtn.BackgroundColor3 = Color3.fromRGB(50, 40, 70)
-    WeatherBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    WeatherBtn.TextSize = 13
-    WeatherBtn.Font = Enum.Font.SourceSansBold
-    WeatherBtn.Text = "Погода: Normal (Нажмите для смены)"
-    WeatherBtn.Parent = MainFrame
-    Instance.new("UICorner", WeatherBtn).CornerRadius = UDim.new(0, 6)
-
-    WeatherBtn.MouseButton1Click:Connect(function()
-        weatherIdx = weatherIdx + 1
-        if weatherIdx > #weatherTypes then weatherIdx = 1 end
-        local selected = weatherTypes[weatherIdx]
-        WeatherBtn.Text = "Погода: " .. selected
-        
-        pcall(function()
-            if selected == "Normal" then
-                Lighting.ClockTime = 14
-                Lighting.Brightness = 2
-                Lighting.FogEnd = 100000
-                Lighting.Ambient = Color3.fromRGB(128, 128, 128)
-            elseif selected == "Foggy" then
-                Lighting.ClockTime = 10
-                Lighting.Brightness = 1
-                Lighting.FogEnd = 350
-                Lighting.Ambient = Color3.fromRGB(90, 90, 90)
-            elseif selected == "Dark (Night)" then
-                Lighting.ClockTime = 0
-                Lighting.Brightness = 0.2
-                Lighting.FogEnd = 200
-                Lighting.Ambient = Color3.fromRGB(15, 15, 20)
-            elseif selected == "Sunset" then
-                Lighting.ClockTime = 18.5
-                Lighting.Brightness = 1.5
-                Lighting.FogEnd = 5000
-                Lighting.Ambient = Color3.fromRGB(200, 100, 50)
-            elseif selected == "Blizzard" then
-                Lighting.ClockTime = 12
-                Lighting.Brightness = 1.2
-                Lighting.FogEnd = 150
-                Lighting.Ambient = Color3.fromRGB(200, 220, 255)
-            end
-        end)
-    end)
-
-    -- Блок связи
-    local SocialLabel = Instance.new("TextLabel")
-    SocialLabel.Size = UDim2.new(0, 300, 0, 20)
-    SocialLabel.Position = UDim2.new(0, 20, 0, 332)
-    SocialLabel.BackgroundTransparency = 1
-    SocialLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
-    SocialLabel.TextSize = 12
-    SocialLabel.Font = Enum.Font.SourceSansBold
-    SocialLabel.Text = "Сообщество (Rocket Way):"
-    SocialLabel.Parent = MainFrame
-
-    local TgBtn = Instance.new("TextButton")
-    TgBtn.Size = UDim2.new(0, 145, 0, 28)
-    TgBtn.Position = UDim2.new(0, 20, 0, 355)
-    TgBtn.BackgroundColor3 = Color3.fromRGB(0, 136, 204)
-    TgBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TgBtn.TextSize = 12
-    TgBtn.Font = Enum.Font.SourceSansBold
-    TgBtn.Text = "Telegram"
-    TgBtn.Parent = MainFrame
-    Instance.new("UICorner", TgBtn).CornerRadius = UDim.new(0, 6)
-    TgBtn.MouseButton1Click:Connect(function() setclipboard("https://t.me/RocketWay") end)
-
-    local DcBtn = Instance.new("TextButton")
-    DcBtn.Size = UDim2.new(0, 145, 0, 28)
-    DcBtn.Position = UDim2.new(0, 175, 0, 355)
-    DcBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-    DcBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    DcBtn.TextSize = 12
-    DcBtn.Font = Enum.Font.SourceSansBold
-    DcBtn.Text = "Discord"
-    DcBtn.Parent = MainFrame
-    Instance.new("UICorner", DcBtn).CornerRadius = UDim.new(0, 6)
-    DcBtn.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/RocketWay") end)
-
-    local ToggleUIBtn = Instance.new("TextButton")
-    ToggleUIBtn.Size = UDim2.new(0, 300, 0, 35)
-    ToggleUIBtn.Position = UDim2.new(0, 20, 0, 520)
-    ToggleUIBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-    ToggleUIBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleUIBtn.TextSize = 13
-    ToggleUIBtn.Font = Enum.Font.SourceSansBold
-    ToggleUIBtn.Text = "Скрыть / Показать меню"
-    ToggleUIBtn.Parent = MainFrame
-    Instance.new("UICorner", ToggleUIBtn).CornerRadius = UDim.new(0, 6)
-
-    local uiVisible = true
-    ToggleUIBtn.MouseButton1Click:Connect(function()
-        uiVisible = not uiVisible
-        MainFrame.Size = uiVisible and UDim2.new(0, 340, 0, 570) or UDim2.new(0, 340, 0, 90)
-        for _, child in pairs(MainFrame:GetChildren()) do
-            if child ~= Title and child ~= ToggleUIBtn then child.Visible = uiVisible end
+local ConfigFileName = "FtapHub_Config.json"
+pcall(function()
+    if readfile and isfile and isfile(ConfigFileName) then
+        local decoded = game:GetService("HttpService"):JSONDecode(readfile(ConfigFileName))
+        if decoded and type(decoded) == "table" then
+            for k, v in pairs(decoded) do Config[k] = v end
         end
-        ToggleUIBtn.Visible = true
-    end)
+    end
+end)
 
-    -- Антибан обход
+local function SaveConfig()
     pcall(function()
-        local mt = getrawmetatable(game)
-        setreadonly(mt, false)
-        local oldIndex = mt.__index
-        mt.__index = newcclosure(function(self, k)
-            if not checkcaller() and (k == "WalkSpeed" or k == "JumpPower") then return 16 end
-            return oldIndex(self, k)
-        end)
-        setreadonly(mt, true)
-    end)
-
-    -- Логика движения, спидхака, деша и анимаций
-    RunService.Heartbeat:Connect(function(dt)
-        pcall(function()
-            local char = LocalPlayer.Character
-            if not char then return end
-            local root = char:FindFirstChild("HumanoidRootPart")
-            local hum = char:FindFirstChild("Humanoid")
-            
-            if root and hum then
-                for _, track in pairs(hum:GetPlayingAnimationTracks()) do
-                    if track.Speed == 0 then track:AdjustSpeed(1) end
-                end
-                
-                if getgenv().RocketConfig.SpeedEnabled and hum.MoveDirection.Magnitude > 0 then
-                    local currentSpeed = getgenv().RocketConfig.SpeedValue
-                    if hum:GetState() == Enum.HumanoidStateType.Freefall or hum.Jump then
-                        currentSpeed = currentSpeed * getgenv().RocketConfig.DashMultiplier
-                    end
-
-                    root.CFrame = root.CFrame + (hum.MoveDirection * (currentSpeed * dt))
-                    
-                    if getgenv().RocketConfig.PublicVisuals then
-                        root.AssemblyLinearVelocity = hum.MoveDirection * currentSpeed
-                    end
-                end
-            end
-        end)
-    end)
-
-    -- Автосбор
-    task.spawn(function()
-        while task.wait(0.3) do
-            if getgenv().RocketConfig.CoinFarm then
-                pcall(function()
-                    for _, obj in pairs(Workspace:GetDescendants()) do
-                        if obj:IsA("BasePart") and (obj.Name:lower():find("coin") or obj.Name:lower():find("pickup") or obj.Name:lower():find("cash") or obj.Name:lower():find("ticket")) then
-                            local char = LocalPlayer.Character
-                            if char and char:FindFirstChild("HumanoidRootPart") then
-                                char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0, 2.5, 0)
-                                task.wait(0.05)
-                            end
-                        end
-                    end
-                end)
-            end
+        if writefile then
+            writefile(ConfigFileName, game:GetService("HttpService"):JSONEncode(Config))
         end
     end)
-
-    -- ВХ
-    local function createESP(object, color, textString)
-        if object:FindFirstChild("RocketESP") then return end
-        local bill = Instance.new("BillboardGui")
-        bill.Name = "RocketESP"
-        bill.Size = UDim2.new(0, 100, 0, 40)
-        bill.AlwaysOnTop = true
-        bill.StudsOffset = Vector3.new(0, 3, 0)
-        
-        local text = Instance.new("TextLabel")
-        text.Size = UDim2.new(1, 0, 1, 0)
-        text.BackgroundTransparency = 1
-        text.TextColor3 = color
-        text.TextScaled = true
-        text.Font = Enum.Font.SourceSansBold
-        text.TextStrokeTransparency = 0
-        text.Text = textString
-        text.Parent = bill
-        bill.Parent = object
-    end
-
-    RunService.RenderStepped:Connect(function()
-        if not getgenv().RocketConfig.ESPEnabled then return end
-        pcall(function()
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-                    createESP(player.Character.Head, Color3.fromRGB(0, 255, 128), player.Name)
-                end
-            end
-            if Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Nextbots") then
-                for _, bot in pairs(Workspace.Game.Nextbots:GetChildren()) do
-                    if bot:FindFirstChild("HumanoidRootPart") then
-                        createESP(bot.HumanoidRootPart, Color3.fromRGB(255, 0, 0), "⚠️ NEXTBOT")
-                    end
-                end
-            end
-        end)
-    end)
-    
-    print("ROCKET | Скрипт успешно разблокирован п-- ROCKET Evade Ultimate Pro (Full Script with Weather Changer, Key System, Speed, Dash, ESP, Coin Farm & Anti-Ban)
--- Исполнитель: Delta Executor
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local CoreGui = game:GetService("CoreGui")
-local Lighting = game:GetService("Lighting")
-local LocalPlayer = Players.LocalPlayer
-
--- Настройки ключа
-local CORRECT_KEY = "ROCKET2026"
-local isAuthorized = false
-
--- Удаление старых интерфейсов
-if CoreGui:FindFirstChild("RocketKeySystem") then CoreGui.RocketKeySystem:Destroy() end
-if CoreGui:FindFirstChild("RocketEvadeUltimate") then CoreGui.RocketEvadeUltimate:Destroy() end
-
--- [ОКНО ВВОДА КЛЮЧА]
-local KeyGui = Instance.new("ScreenGui")
-KeyGui.Name = "RocketKeySystem"
-KeyGui.Parent = CoreGui
-
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Size = UDim2.new(0, 300, 0, 180)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-KeyFrame.BorderSizePixel = 0
-KeyFrame.Active = true
-KeyFrame.Draggable = true
-KeyFrame.Parent = KeyGui
-Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
-
-local KeyTitle = Instance.new("TextLabel")
-KeyTitle.Size = UDim2.new(1, 0, 0, 40)
-KeyTitle.BackgroundTransparency = 1
-KeyTitle.Text = "ROCKET | Авторизация"
-KeyTitle.TextColor3 = Color3.fromRGB(0, 255, 128)
-KeyTitle.TextSize = 16
-KeyTitle.Font = Enum.Font.SourceSansBold
-KeyTitle.Parent = KeyFrame
-
-local KeyBox = Instance.new("TextBox")
-KeyBox.Size = UDim2.new(0, 260, 0, 35)
-KeyBox.Position = UDim2.new(0, 20, 0, 55)
-KeyBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyBox.PlaceholderText = "Введите ключ..."
-KeyBox.TextSize = 14
-KeyBox.Font = Enum.Font.SourceSansBold
-KeyBox.Parent = KeyFrame
-Instance.new("UICorner", KeyBox).CornerRadius = UDim.new(0, 6)
-
-local SubmitBtn = Instance.new("TextButton")
-SubmitBtn.Size = UDim2.new(0, 260, 0, 35)
-SubmitBtn.Position = UDim2.new(0, 20, 0, 100)
-SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SubmitBtn.TextSize = 14
-SubmitBtn.Font = Enum.Font.SourceSansBold
-SubmitBtn.Text = "Подтвердить ключ"
-SubmitBtn.Parent = KeyFrame
-Instance.new("UICorner", SubmitBtn).CornerRadius = UDim.new(0, 6)
-
-local GetKeyBtn = Instance.new("TextButton")
-GetKeyBtn.Size = UDim2.new(0, 260, 0, 25)
-GetKeyBtn.Position = UDim2.new(0, 20, 0, 142)
-GetKeyBtn.BackgroundTransparency = 1
-GetKeyBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-GetKeyBtn.TextSize = 12
-GetKeyBtn.Font = Enum.Font.SourceSansBold
-GetKeyBtn.Text = "Получить ключ (Telegram)"
-GetKeyBtn.Parent = KeyFrame
-
-GetKeyBtn.MouseButton1Click:Connect(function()
-    setclipboard("https://t.me/RocketWay")
-    GetKeyBtn.Text = "Ссылка скопирована!"
-    task.wait(1.5)
-    GetKeyBtn.Text = "Получить ключ (Telegram)"
-end)
-
-SubmitBtn.MouseButton1Click:Connect(function()
-    if KeyBox.Text == CORRECT_KEY then
-        isAuthorized = true
-        KeyGui:Destroy()
-        LoadMainScript()
-    else
-        SubmitBtn.Text = "Неверный ключ!"
-        SubmitBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        task.wait(1.5)
-        SubmitBtn.Text = "Подтвердить ключ"
-        SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
-    end
-end)
-
--- [ОСНОВНОЙ СКРИПТ (Запускается после ввода ключа)]
-function LoadMainScript()
-    getgenv().RocketConfig = {
-        SpeedEnabled = false,
-        SpeedValue = 200,
-        DashMultiplier = 2.5,
-        CoinFarm = false,
-        ESPEnabled = false,
-        PublicVisuals = true,
-        AntiBanBypass = true,
-        CurrentWeather = "Normal"
-    }
-
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "RocketEvadeUltimate"
-    ScreenGui.Parent = CoreGui
-
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 340, 0, 570)
-    MainFrame.Position = UDim2.new(0.5, -170, 0.5, -285)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-    MainFrame.Parent = ScreenGui
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, 0, 0, 40)
-    Title.BackgroundTransparency = 1
-    Title.Text = "ROCKET | Evade Ultimate Pro"
-    Title.TextColor3 = Color3.fromRGB(0, 255, 128)
-    Title.TextSize = 16
-    Title.Font = Enum.Font.SourceSansBold
-    Title.Parent = MainFrame
-
-    local function createToggle(name, yPos, callback)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0, 300, 0, 32)
-        btn.Position = UDim2.new(0, 20, 0, yPos)
-        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.TextSize = 13
-        btn.Font = Enum.Font.SourceSansBold
-        btn.Text = name .. ": OFF"
-        btn.Parent = MainFrame
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-        
-        local state = false
-        btn.MouseButton1Click:Connect(function()
-            state = not state
-            btn.BackgroundColor3 = state and Color3.fromRGB(0, 180, 90) or Color3.fromRGB(30, 30, 40)
-            btn.Text = name .. (state and ": ON" or ": OFF")
-            callback(state)
-        end)
-    end
-
-    local function createTextBox(name, yPos, defaultVal, callback)
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0, 160, 0, 32)
-        label.Position = UDim2.new(0, 20, 0, yPos)
-        label.BackgroundTransparency = 1
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.TextSize = 12
-        label.Font = Enum.Font.SourceSansBold
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Text = name
-        label.Parent = MainFrame
-        
-        local box = Instance.new("TextBox")
-        box.Size = UDim2.new(0, 130, 0, 32)
-        box.Position = UDim2.new(0, 190, 0, yPos)
-        box.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        box.TextColor3 = Color3.fromRGB(0, 255, 128)
-        box.TextSize = 13
-        box.Font = Enum.Font.SourceSansBold
-        box.Text = tostring(defaultVal)
-        box.Parent = MainFrame
-        Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
-        
-        box.FocusLost:Connect(function()
-            local num = tonumber(box.Text)
-            if num then callback(num) else box.Text = tostring(defaultVal) callback(defaultVal) end
-        end)
-    end
-
-    -- Элементы интерфейса
-    createToggle("Спидхак (200+)", 45, function(state) getgenv().RocketConfig.SpeedEnabled = state end)
-    createTextBox("Скорость:", 82, 200, function(val) getgenv().RocketConfig.SpeedValue = val end)
-    createTextBox("Множитель Дэша:", 119, 2.5, function(val) getgenv().RocketConfig.DashMultiplier = val end)
-    createToggle("Визуальная синхронизация", 156, function(state) getgenv().RocketConfig.PublicVisuals = state end)
-    createToggle("Автосбор монет", 193, function(state) getgenv().RocketConfig.CoinFarm = state end)
-    createToggle("ВХ (Игроки + Nextbots)", 230, function(state) getgenv().RocketConfig.ESPEnabled = state end)
-
-    -- Меню выбора погоды в Evade
-    local WeatherLabel = Instance.new("TextLabel")
-    WeatherLabel.Size = UDim2.new(0, 300, 0, 20)
-    WeatherLabel.Position = UDim2.new(0, 20, 0, 268)
-    WeatherLabel.BackgroundTransparency = 1
-    WeatherLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
-    WeatherLabel.TextSize = 12
-    WeatherLabel.Font = Enum.Font.SourceSansBold
-    WeatherLabel.Text = "Выбор погоды / Освещения в Evade:"
-    WeatherLabel.Parent = MainFrame
-
-    local weatherTypes = {"Normal", "Foggy", "Dark (Night)", "Sunset", "Blizzard"}
-    local weatherIdx = 1
-
-    local WeatherBtn = Instance.new("TextButton")
-    WeatherBtn.Size = UDim2.new(0, 300, 0, 32)
-    WeatherBtn.Position = UDim2.new(0, 20, 0, 292)
-    WeatherBtn.BackgroundColor3 = Color3.fromRGB(50, 40, 70)
-    WeatherBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    WeatherBtn.TextSize = 13
-    WeatherBtn.Font = Enum.Font.SourceSansBold
-    WeatherBtn.Text = "Погода: Normal (Нажмите для смены)"
-    WeatherBtn.Parent = MainFrame
-    Instance.new("UICorner", WeatherBtn).CornerRadius = UDim.new(0, 6)
-
-    WeatherBtn.MouseButton1Click:Connect(function()
-        weatherIdx = weatherIdx + 1
-        if weatherIdx > #weatherTypes then weatherIdx = 1 end
-        local selected = weatherTypes[weatherIdx]
-        WeatherBtn.Text = "Погода: " .. selected
-        
-        pcall(function()
-            if selected == "Normal" then
-                Lighting.ClockTime = 14
-                Lighting.Brightness = 2
-                Lighting.FogEnd = 100000
-                Lighting.Ambient = Color3.fromRGB(128, 128, 128)
-            elseif selected == "Foggy" then
-                Lighting.ClockTime = 10
-                Lighting.Brightness = 1
-                Lighting.FogEnd = 350
-                Lighting.Ambient = Color3.fromRGB(90, 90, 90)
-            elseif selected == "Dark (Night)" then
-                Lighting.ClockTime = 0
-                Lighting.Brightness = 0.2
-                Lighting.FogEnd = 200
-                Lighting.Ambient = Color3.fromRGB(15, 15, 20)
-            elseif selected == "Sunset" then
-                Lighting.ClockTime = 18.5
-                Lighting.Brightness = 1.5
-                Lighting.FogEnd = 5000
-                Lighting.Ambient = Color3.fromRGB(200, 100, 50)
-            elseif selected == "Blizzard" then
-                Lighting.ClockTime = 12
-                Lighting.Brightness = 1.2
-                Lighting.FogEnd = 150
-                Lighting.Ambient = Color3.fromRGB(200, 220, 255)
-            end
-        end)
-    end)
-
-    -- Блок связи
-    local SocialLabel = Instance.new("TextLabel")
-    SocialLabel.Size = UDim2.new(0, 300, 0, 20)
-    SocialLabel.Position = UDim2.new(0, 20, 0, 332)
-    SocialLabel.BackgroundTransparency = 1
-    SocialLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
-    SocialLabel.TextSize = 12
-    SocialLabel.Font = Enum.Font.SourceSansBold
-    SocialLabel.Text = "Сообщество (Rocket Way):"
-    SocialLabel.Parent = MainFrame
-
-    local TgBtn = Instance.new("TextButton")
-    TgBtn.Size = UDim2.new(0, 145, 0, 28)
-    TgBtn.Position = UDim2.new(0, 20, 0, 355)
-    TgBtn.BackgroundColor3 = Color3.fromRGB(0, 136, 204)
-    TgBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TgBtn.TextSize = 12
-    TgBtn.Font = Enum.Font.SourceSansBold
-    TgBtn.Text = "Telegram"
-    TgBtn.Parent = MainFrame
-    Instance.new("UICorner", TgBtn).CornerRadius = UDim.new(0, 6)
-    TgBtn.MouseButton1Click:Connect(function() setclipboard("https://t.me/RocketWay") end)
-
-    local DcBtn = Instance.new("TextButton")
-    DcBtn.Size = UDim2.new(0, 145, 0, 28)
-    DcBtn.Position = UDim2.new(0, 175, 0, 355)
-    DcBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-    DcBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    DcBtn.TextSize = 12
-    DcBtn.Font = Enum.Font.SourceSansBold
-    DcBtn.Text = "Discord"
-    DcBtn.Parent = MainFrame
-    Instance.new("UICorner", DcBtn).CornerRadius = UDim.new(0, 6)
-    DcBtn.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/RocketWay") end)
-
-    local ToggleUIBtn = Instance.new("TextButton")
-    ToggleUIBtn.Size = UDim2.new(0, 300, 0, 35)
-    ToggleUIBtn.Position = UDim2.new(0, 20, 0, 520)
-    ToggleUIBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-    ToggleUIBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleUIBtn.TextSize = 13
-    ToggleUIBtn.Font = Enum.Font.SourceSansBold
-    ToggleUIBtn.Text = "Скрыть / Показать меню"
-    ToggleUIBtn.Parent = MainFrame
-    Instance.new("UICorner", ToggleUIBtn).CornerRadius = UDim.new(0, 6)
-
-    local uiVisible = true
-    ToggleUIBtn.MouseButton1Click:Connect(function()
-        uiVisible = not uiVisible
-        MainFrame.Size = uiVisible and UDim2.new(0, 340, 0, 570) or UDim2.new(0, 340, 0, 90)
-        for _, child in pairs(MainFrame:GetChildren()) do
-            if child ~= Title and child ~= ToggleUIBtn then child.Visible = uiVisible end
-        end
-        ToggleUIBtn.Visible = true
-    end)
-
-    -- Антибан обход
-    pcall(function()
-        local mt = getrawmetatable(game)
-        setreadonly(mt, false)
-        local oldIndex = mt.__index
-        mt.__index = newcclosure(function(self, k)
-            if not checkcaller() and (k == "WalkSpeed" or k == "JumpPower") then return 16 end
-            return oldIndex(self, k)
-        end)
-        setreadonly(mt, true)
-    end)
-
-    -- Логика движения, спидхака, деша и анимаций
-    RunService.Heartbeat:Connect(function(dt)
-        pcall(function()
-            local char = LocalPlayer.Character
-            if not char then return end
-            local root = char:FindFirstChild("HumanoidRootPart")
-            local hum = char:FindFirstChild("Humanoid")
-            
-            if root and hum then
-                for _, track in pairs(hum:GetPlayingAnimationTracks()) do
-                    if track.Speed == 0 then track:AdjustSpeed(1) end
-                end
-                
-                if getgenv().RocketConfig.SpeedEnabled and hum.MoveDirection.Magnitude > 0 then
-                    local currentSpeed = getgenv().RocketConfig.SpeedValue
-                    if hum:GetState() == Enum.HumanoidStateType.Freefall or hum.Jump then
-                        currentSpeed = currentSpeed * getgenv().RocketConfig.DashMultiplier
-                    end
-
-                    root.CFrame = root.CFrame + (hum.MoveDirection * (currentSpeed * dt))
-                    
-                    if getgenv().RocketConfig.PublicVisuals then
-                        root.AssemblyLinearVelocity = hum.MoveDirection * currentSpeed
-                    end
-                end
-            end
-        end)
-    end)
-
-    -- Автосбор
-    task.spawn(function()
-        while task.wait(0.3) do
-            if getgenv().RocketConfig.CoinFarm then
-                pcall(function()
-                    for _, obj in pairs(Workspace:GetDescendants()) do
-                        if obj:IsA("BasePart") and (obj.Name:lower():find("coin") or obj.Name:lower():find("pickup") or obj.Name:lower():find("cash") or obj.Name:lower():find("ticket")) then
-                            local char = LocalPlayer.Character
-                            if char and char:FindFirstChild("HumanoidRootPart") then
-                                char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0, 2.5, 0)
-                                task.wait(0.05)
-                            end
-                        end
-                    end
-                end)
-            end
-        end
-    end)
-
-    -- ВХ
-    local function createESP(object, color, textString)
-        if object:FindFirstChild("RocketESP") then return end
-        local bill = Instance.new("BillboardGui")
-        bill.Name = "RocketESP"
-        bill.Size = UDim2.new(0, 100, 0, 40)
-        bill.AlwaysOnTop = true
-        bill.StudsOffset = Vector3.new(0, 3, 0)
-        
-        local text = Instance.new("TextLabel")
-        text.Size = UDim2.new(1, 0, 1, 0)
-        text.BackgroundTransparency = 1
-        text.TextColor3 = color
-        text.TextScaled = true
-        text.Font = Enum.Font.SourceSansBold
-        text.TextStrokeTransparency = 0
-        text.Text = textString
-        text.Parent = bill
-        bill.Parent = object
-    end
-
-    RunService.RenderStepped:Connect(function()
-        if not getgenv().RocketConfig.ESPEnabled then return end
-        pcall(function()
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-                    createESP(player.Character.Head, Color3.fromRGB(0, 255, 128), player.Name)
-                end
-            end
-            if Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Nextbots") then
-                for _, bot in pairs(Workspace.Game.Nextbots:GetChildren()) do
-                    if bot:FindFirstChild("HumanoidRootPart") then
-                        createESP(bot.HumanoidRootPart, Color3.fromRGB(255, 0, 0), "⚠️ NEXTBOT")
-                    end
-                end
-            end
-        end)
-    end)
-    
-    print("ROCKET | Скрипт успешно разблокирован по ключу!")
 end
+
+-- 2. ЗАЩИТА
+pcall(function()
+    local mt = getrawmetatable(game)
+    local oldNamecall = mt.__namecall
+    setreadonly(mt, false)
+    mt.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local nameStr = tostring(self):lower()
+        if nameStr:find("anticheat") or nameStr:find("ban") or nameStr:find("kick") or nameStr:find("detect") or nameStr:find("report") or nameStr:find("ac") then
+            if method == "FireServer" or method == "InvokeServer" then return nil end
+        end
+        return oldNamecall(self, ...)
+    end)
+    setreadonly(mt, true)
+end)
+
+-- Очистка старых окон
+pcall(function()
+    if PlayerGui:FindFirstChild("FtapMultiHub") then PlayerGui.FtapMultiHub:Destroy() end
+    if CoreGui:FindFirstChild("FtapMultiHub") then CoreGui.FtapMultiHub:Destroy() end
+end)
+
+-- 3. СОЗДАНИЕ GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "FtapMultiHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.DisplayOrder = 2147483647
+ScreenGui.IgnoreGuiInset = true
+
+local success = pcall(function() ScreenGui.Parent = CoreGui end)
+if not success then ScreenGui.Parent = PlayerGui end
+
+-- Главная панель
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame.BackgroundTransparency = 0.05
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 420, 0, 310)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(45, 45, 55)
+MainStroke.Thickness = 1.5
+MainStroke.Parent = MainFrame
+
+-- Шапка
+local TopBar = Instance.new("Frame")
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+TopBar.BorderSizePixel = 0
+TopBar.Size = UDim2.new(1, 0, 0, 34)
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 10)
+
+-- FPS и Пинг
+local FpsLabel = Instance.new("TextLabel")
+FpsLabel.Parent = TopBar
+FpsLabel.BackgroundTransparency = 1
+FpsLabel.Position = UDim2.new(0, 12, 0, 0)
+FpsLabel.Size = UDim2.new(0, 240, 1, 0)
+FpsLabel.Font = Enum.Font.GothamMedium
+FpsLabel.Text = "FPS: 60 | Ping: 40ms"
+FpsLabel.TextColor3 = Color3.fromRGB(0, 220, 130)
+FpsLabel.TextSize = 10
+FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Кнопка закрытия
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Parent = TopBar
+CloseBtn.BackgroundColor3 = Color3.fromRGB(235, 65, 65)
+CloseBtn.Position = UDim2.new(1, -28, 0.5, -9)
+CloseBtn.Size = UDim2.new(0, 18, 0, 18)
+CloseBtn.Text = ""
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+
+-- Плавающая кнопка возврата
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+ToggleButton.Position = UDim2.new(0, 15, 0.3, 0)
+ToggleButton.Size = UDim2.new(0, 45, 0, 45)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Text = "FTAP"
+ToggleButton.TextColor3 = Color3.fromRGB(0, 200, 255)
+ToggleButton.TextSize = 10
+ToggleButton.Visible = false
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", ToggleButton).Color = Color3.fromRGB(0, 200, 255)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    ToggleButton.Visible = true
+end)
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    ToggleButton.Visible = false
+end)
+
+-- Панель вкладок
+local TabsBar = Instance.new("Frame")
+TabsBar.Parent = MainFrame
+TabsBar.BackgroundTransparency = 1
+TabsBar.Position = UDim2.new(0, 8, 0, 40)
+TabsBar.Size = UDim2.new(1, -16, 0, 30)
+
+local UICols = Instance.new("UIListLayout")
+UICols.Parent = TabsBar
+UICols.FillDirection = Enum.FillDirection.Horizontal
+UICols.SortOrder = Enum.SortOrder.LayoutOrder
+UICols.Padding = UDim.new(0, 3)
+
+local PagesContainer = Instance.new("Folder")
+PagesContainer.Parent = MainFrame
+
+local pages = {}
+local tabButtons = {}
+
+local function createTab(name, index)
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Parent = TabsBar
+    tabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    tabBtn.Size = UDim2.new(0.2, -3, 1, 0)
+    tabBtn.Font = Enum.Font.GothamBold
+    tabBtn.Text = name
+    tabBtn.TextColor3 = Color3.fromRGB(140, 145, 160)
+    tabBtn.TextSize = 8
+    Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 6)
+    
+    local page = Instance.new("ScrollingFrame")
+    page.Name = "Page_" .. name
+    page.Parent = PagesContainer
+    page.BackgroundTransparency = 1
+    page.Position = UDim2.new(0, 8, 0, 78)
+    page.Size = UDim2.new(1, -16, 1, -86)
+    page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    page.ScrollBarThickness = 3
+    page.Visible = (index == 1)
+    
+    local pLayout = Instance.new("UIListLayout")
+    pLayout.Parent = page
+    pLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    pLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    pLayout.Padding = UDim.new(0, 5)
+    
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, p in pairs(pages) do p.Visible = false end
+        for _, b in pairs(tabButtons) do
+            b.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            b.TextColor3 = Color3.fromRGB(140, 145, 160)
+        end
+        page.Visible = true
+        tabBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+        tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+    
+    if index == 1 then
+        tabBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+        tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+    
+    table.insert(pages, page)
+    table.insert(tabButtons, tabBtn)
+    return page
+end
+
+local PageFtap = createTab("Ftap", 1)
+local PageEvade = createTab("Evade", 2)
+local PagePlayers = createTab("Players", 3)
+local PageVisual = createTab("Visual", 4)
+local PageTroll = createTab("Troll", 5)
+
+-- Функция создания переключателя
+local function addToggle(page, labelText, configKey, callback)
+    local ToggleBox = Instance.new("Frame")
+    ToggleBox.Parent = page
+    ToggleBox.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+    ToggleBox.Size = UDim2.new(1, -4, 0, 35)
+    Instance.new("UICorner", ToggleBox).CornerRadius = UDim.new(0, 6)
+    
+    local Label = Instance.new("TextLabel")
+    Label.Parent = ToggleBox
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0, 10, 0, 0)
+    Label.Size = UDim2.new(0.7, 0, 1, 0)
+    Label.Font = Enum.Font.GothamMedium
+    Label.Text = labelText
+    Label.TextColor3 = Color3.fromRGB(200, 205, 215)
+    Label.TextSize = 10
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local SwitchBtn = Instance.new("TextButton")
+    SwitchBtn.Parent = ToggleBox
+    SwitchBtn.BackgroundColor3 = Config[configKey] and Color3.fromRGB(0, 170, 100) or Color3.fromRGB(40, 40, 50)
+    SwitchBtn.Position = UDim2.new(1, -42, 0.5, -9)
+    SwitchBtn.Size = UDim2.new(0, 32, 0, 18)
+    SwitchBtn.Text = ""
+    Instance.new("UICorner", SwitchBtn).CornerRadius = UDim.new(1, 0)
+    
+    local Circle = Instance.new("Frame")
+    Circle.Parent = SwitchBtn
+    Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Circle.Position = Config[configKey] and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+    Circle.Size = UDim2.new(0, 14, 0, 14)
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+    
+    SwitchBtn.MouseButton1Click:Connect(function()
+        Config[configKey] = not Config[configKey]
+        SaveConfig()
+        if Config[configKey] then
+            SwitchBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 100)
+            Circle.Position = UDim2.new(1, -16, 0.5, -7)
+        else
+            SwitchBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+            Circle.Position = UDim2.new(0, 2, 0.5, -7)
+        end
+        pcall(function() callback(Config[configKey]) end)
+    end)
+    
+    if Config[configKey] then pcall(function() callback(true) end) end
+end
+
+-- 4. РЕАЛИЗАЦИЯ ФУНКЦИЙ
+
+-- --- ВКЛАДКА FTAP ---
+addToggle(PageFtap, "Noclip (Сквозь стены)", "Noclip", function(state) Config.Noclip = state end)
+RunService.Stepped:Connect(function()
+    if Config.Noclip and LocalPlayer.Character then
+        pcall(function()
+            for _, p in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = false end
+            end
+        end)
+    end
+end)
+
+addToggle(PageFtap, "SpeedHack (Быстрый бег)", "Speed", function(state) Config.Speed = state end)
+RunService.Stepped:Connect(function()
+    if Config.Speed and LocalPlayer.Character then
+        pcall(function()
+            local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.MoveDirection.Magnitude > 0 then
+                LocalPlayer.Character:TranslateBy(hum.MoveDirection * 0.45)
+            end
+        end)
+    end
+end)
+
+addToggle(PageFtap, "Обход барьеров и ловушек", "Bypass", function(state) Config.Bypass = state end)
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if Config.Bypass then
+            pcall(function()
+                for _, obj in ipairs(Workspace:GetChildren()) do
+                    if obj.Name:lower():find("barrier") or obj.Name:lower():find("kill") or obj.Name:lower():find("trap") then
+                        if obj:IsA("BasePart") then obj.CanCollide = false end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+addToggle(PageFtap, "Бесконечный прыжок (Inf Jump)", "InfJump", function(state) Config.InfJump = state end)
+UserInputService.JumpRequest:Connect(function()
+    if Config.InfJump and LocalPlayer.Character then
+        pcall(function()
+            local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end)
+    end
+end)
+
+local TpBtn = Instance.new("TextButton")
+TpBtn.Parent = PageFtap
+TpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+TpBtn.Size = UDim2.new(1, -4, 0, 32)
+TpBtn.Font = Enum.Font.GothamBold
+TpBtn.Text = "⚡ Телепорт вперед"
+TpBtn.TextColor3 = Color3.fromRGB(0, 200, 255)
+TpBtn.TextSize = 10
+Instance.new("UICorner", TpBtn).CornerRadius = UDim.new(0, 6)
+TpBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = hrp.CFrame + (hrp.CFrame.LookVector * 15)
+        end
+    end)
+end)
+
+
+-- --- ВКЛАДКА EVADE ---
+addToggle(PageEvade, "Защита от ботов", "EvadeGod", function(state) Config.EvadeGod = state end)
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+        if Config.EvadeGod and LocalPlayer.Character and LocalPlayer.Character.PrimaryPart then
+            pcall(function()
+                local hrp = LocalPlayer.Character.PrimaryPart
+                for _, v in ipairs(Workspace:GetDescendants()) do
+                    if v:IsA("BasePart") and (v.Name:lower():find("nextbot") or v.Name:lower():find("bot")) then
+                        if (v.Position - hrp.Position).Magnitude < 18 then v.CanCollide = false end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+addToggle(PageEvade, "Бесконечная выносливость", "EvadeStamina", function(state) Config.EvadeStamina = state end)
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if Config.EvadeStamina then
+            pcall(function()
+                local sf = LocalPlayer:FindFirstChild("PlayerStats") or LocalPlayer:FindFirstChild("Values")
+                if sf then
+                    for _, s in ipairs(sf:GetChildren()) do
+                        if s.Name:lower():find("stamina") and (s:IsA("NumberValue") or s:IsA("IntValue")) then s.Value = 100 end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+
+-- --- ВКЛАДКА PLAYERS (СПИСОК ИГРОКОВ, ТП И СЛЕЖКА) ---
+local SelectedTarget = nil
+local TargetLabel = Instance.new("TextLabel")
+TargetLabel.Parent = PagePlayers
+TargetLabel.BackgroundTransparency = 1
+TargetLabel.Size = UDim2.new(1, -4, 0, 22)
+TargetLabel.Font = Enum.Font.GothamMedium
+TargetLabel.Text = "Цель: Никто не выбран"
+TargetLabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+TargetLabel.TextSize = 10
+
+-- Кнопка телепорта к цели
+local TpTargetBtn = Instance.new("TextButton")
+TpTargetBtn.Parent = PagePlayers
+TpTargetBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 90)
+TpTargetBtn.Size = UDim2.new(1, -4, 0, 30)
+TpTargetBtn.Font = Enum.Font.GothamBold
+TpTargetBtn.Text = "🎯 Телепорт к цели"
+TpTargetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TpTargetBtn.TextSize = 10
+Instance.new("UICorner", TpTargetBtn).CornerRadius = UDim.new(0, 6)
+TpTargetBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        if SelectedTarget and SelectedTarget.Character and SelectedTarget.Character:FindFirstChild("HumanoidRootPart") then
+            local myHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHrp then
+                myHrp.CFrame = SelectedTarget.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+            end
+        end
+    end)
+end)
+
+-- Кнопка слежки (Spectate)
+local SpecBtn = Instance.new("TextButton")
+SpecBtn.Parent = PagePlayers
+SpecBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+SpecBtn.Size = UDim2.new(1, -4, 0, 30)
+SpecBtn.Font = Enum.Font.GothamBold
+SpecBtn.Text = "👁️ Следить / Снять слежку"
+SpecBtn.TextColor3 = Color3.fromRGB(0, 200, 255)
+SpecBtn.TextSize = 10
+Instance.new("UICorner", SpecBtn).CornerRadius = UDim.new(0, 6)
+
+local isSpectating = false
+SpecBtn.MouseButton1Click:Connect(function()
+    isSpectating = not isSpectating
+    if not isSpectating then
+        Camera.CameraSubject = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if isSpectating and SelectedTarget and SelectedTarget.Character then
+        pcall(function()
+            local hum = SelectedTarget.Character:FindFirstChildOfClass("Humanoid")
+            if hum then Camera.CameraSubject = hum end
+        end)
+    end
+end)
+
+-- Контейнер со списком игроков
+local PlayersListContainer = Instance.new("ScrollingFrame")
+PlayersListContainer.Parent = PagePlayers
+PlayersListContainer.BackgroundTransparency = 1
+PlayersListContainer.Size = UDim2.new(1, -4, 0, 110)
+PlayersListContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+PlayersListContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+PlayersListContainer.ScrollBarThickness = 2
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Parent = PlayersListContainer
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 4)
+
+local function RefreshPlayersList()
+    for _, child in ipairs(PlayersListContainer:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Parent = PlayersListContainer
+            pBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+            pBtn.Size = UDim2.new(1, 0, 0, 28)
+            pBtn.Font = Enum.Font.GothamMedium
+            pBtn.Text = plr.Name .. " (" .. plr.DisplayName .. ")"
+            pBtn.TextColor3 = Color3.fromRGB(220, 220, 230)
+            pBtn.TextSize = 9
+            Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 5)
+            
+            pBtn.MouseButton1Click:Connect(function()
+                SelectedTarget = plr
+                TargetLabel.Text = "Цель: " .. plr.Name
+            end)
+        end
+    end
+end
+
+-- Кнопка обновления списка
+local RefreshBtn = Instance.new("TextButton")
+RefreshBtn.Parent = PagePlayers
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
+RefreshBtn.Size = UDim2.new(1, -4, 0, 28)
+RefreshBtn.Font = Enum.Font.GothamBold
+RefreshBtn.Text = "🔄 Обновить список игроков"
+RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RefreshBtn.TextSize = 10
+Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 6)
+RefreshBtn.MouseButton1Click:Connect(RefreshPlayersList)
+
+-- Авто-первичное заполнение списка
+task.spawn(RefreshPlayersList)
+
+
+-- --- ВКЛАДКА VISUAL ---
+addToggle(PageVisual, "Fullbright (Убрать тени)", "Fullbright", function(state)
+    Config.Fullbright = state
+    Lighting.Brightness = state and 2 or 1
+    Lighting.GlobalShadows = not state
+end)
+
+addToggle(PageVisual, "Ночное зрение", "NightVision", function(state)
+    Config.NightVision = state
+    Lighting.Ambient = state and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(0, 0, 0)
+end)
+
+addToggle(PageVisual, "Буст ФПС (Эффекты)", "FpsBoost", function(state)
+    Config.FpsBoost = state
+    pcall(function()
+        for _, v in ipairs(Lighting:GetChildren()) do if v:IsA("PostEffect") then v.Enabled = not state end end
+    end)
+end)
+
+addToggle(PageVisual, "Ультра ФПС (Текстуры)", "UltraFps", function(state)
+    Config.UltraFps = state
+    pcall(function()
+        for _, part in ipairs(Workspace:GetDescendants()) do
+            if part:IsA("BasePart") then part.Material = state and Enum.Material.SmoothPlastic or Enum.Material.Plastic end
+        end
+    end)
+end)
+
+addToggle(PageVisual, "Растяг экрана (iPad)", "Resolution", function(state)
+    Config.Resolution = state
+    pcall(function() Camera.FieldOfView = state and 95 or 70 end)
+end)
+
+
+-- --- ВКЛАДКА TROLL ---
+local ActionBtn = Instance.new("TextButton")
+ActionBtn.Parent = PageTroll
+ActionBtn.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+ActionBtn.Size = UDim2.new(1, -4, 0, 35)
+ActionBtn.Font = Enum.Font.GothamBold
+ActionBtn.Text = "Снос сервера / Десинхронизация"
+ActionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ActionBtn.TextSize = 10
+Instance.new("UICorner", ActionBtn).CornerRadius = UDim.new(0, 6)
+ActionBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        for i = 1, 200 do task.spawn(function() pcall(function() local a = {math.random(1, 999999)} end) end) end
+    end)
+end)
+
+-- Live FPS & Ping
+RunService.RenderStepped:Connect(function()
+    pcall(function()
+        local fps = math.floor(1 / RunService.RenderStepped:Wait())
+        local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+        FpsLabel.Text = string.format("FPS: %d | Ping: %d ms", fps, ping)
+    end)
+end)
+
+print("Ftap & Evade Multi-Hub with Players Tab loaded!")
